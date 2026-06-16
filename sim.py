@@ -37,19 +37,20 @@ class ParticleSource:
     def spawn(self,xs,dt):
         self.t+=dt
         while self.t*self.rate>1 and xs.shape[0]<self.MAX_PARTICLES:
-            xs = np.append(xs,self.x)
+            xs = np.vstack([xs,self.x])
             self.t-=1/self.rate
         return xs
     
 class ParticleSystem:
     def __init__(self) -> None:
-        self.xs = np.empty(shape=[0,2])
+        self.xs = np.empty(shape=[0,2])        
         self.vs = np.empty(shape=self.xs.shape)
         self.sources = []
 
     def update_pos(self,dt):
         self.random_vel()
-        self.xs = self.xs+self.vs*dt
+        if self.xs.size>0:
+            self.xs = self.xs+self.vs*dt
 
     def add_source(self,x,rate,max_particles=1000):
         self.sources.append(ParticleSource(x,rate,max_particles))
@@ -59,7 +60,7 @@ class ParticleSystem:
             self.xs = source.spawn(self.xs,dt)
 
     def random_vel(self):
-        self.vs = np.interp(np.random.rand(*self.vs.shape),[0,1],[-1,1])
+        self.vs = np.interp(np.random.rand(*self.xs.shape),[0,1],[-1,1])
 
     def step(self,dt):
         self.update_sources(dt)
